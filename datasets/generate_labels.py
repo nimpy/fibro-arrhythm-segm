@@ -60,7 +60,7 @@ if __name__ == '__main__':
             for core in cores:
                 plt.plot(core[0], core[1], "ro")
                 plt.plot(np.mean(core[0]), np.mean(core[1]), "wo")
-            plt.show()
+            # plt.show()
 
 
             labels = np.zeros_like(texture)
@@ -70,18 +70,30 @@ if __name__ == '__main__':
                 print(core[0])
                 print(core[1])
 
-                gaussian_core = gaus_2D(np.mean(core[0]), np.mean(core[1]), 20)
-                plt.imshow(gaussian_core)
-                plt.show()
+                core_center_x = np.mean(core[0])
+                core_center_y = np.mean(core[1])
+                core_center = np.array(core_center_x, core_center_y)
+
+                average_dist_from_core = 0
+                for i in range(len(core[0])):
+                    average_dist_from_core += np.linalg.norm(np.array(core[0][i], core[1][i]) - core_center)
+
+                average_dist_from_core /= len(core[0])
+                print(average_dist_from_core)
+                core_radius = 1.5 * average_dist_from_core  # TODO use this for gaus_2D function instead
+
+
+                gaussian_core = gaus_2D(core_center_x, core_center_y, average_dist_from_core)
+                # plt.imshow(gaussian_core)
+                # plt.show()
+
+                # TODO make the "Gaussian" balls have the same magniture,
+                # TODO threshold everything outside of e.g. 2 x radius to zero
+
+                labels += gaussian_core
+
+            plt.imshow(labels)
+            plt.show()
 
 
 
-
-
-
-    # xx, yy = np.meshgrid(np.arange(254), np.arange(254))
-    # gaus2d = gaus(xx, 75, 20) * gaus(yy, 50, 10)
-    #
-    # plt.imshow(gaus2d, cmap='gray')
-    # plt.show()
-    # print()
