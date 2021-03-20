@@ -4,6 +4,8 @@ import numpy as np
 import imageio
 import matplotlib.pyplot as plt
 import argparse
+from sklearn.preprocessing import normalize
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--data_dir_arrhythm', default='/scratch/fibro_arrhythm_data/OriginalTextures/OriginalArrhythmogenic',
@@ -74,23 +76,30 @@ if __name__ == '__main__':
                 core_center_y = np.mean(core[1])
                 core_center = np.array(core_center_x, core_center_y)
 
-                average_dist_from_core = 0
+                # average_dist_from_core = 0  # TODO should I be using this instead?
+                distances_from_core = []
                 for i in range(len(core[0])):
-                    average_dist_from_core += np.linalg.norm(np.array(core[0][i], core[1][i]) - core_center)
+                    distance_from_core = np.linalg.norm(np.array(core[0][i], core[1][i]) - core_center)
+                    distances_from_core.append(distance_from_core)
+                    # average_dist_from_core += distance_from_core
 
-                average_dist_from_core /= len(core[0])
-                print(average_dist_from_core)
-                core_radius = 1.5 * average_dist_from_core  # TODO use this for gaus_2D function instead
+                # average_dist_from_core /= len(core[0])
+                # print(average_dist_from_core)
+                # core_radius = 1.5 * average_dist_from_core  # TODO use this for gaus_2D function instead
 
+                max_distance_from_core = np.max(np.array(distances_from_core))
+                print(max_distance_from_core)
 
-                gaussian_core = gaus_2D(core_center_x, core_center_y, average_dist_from_core)
-                # plt.imshow(gaussian_core)
-                # plt.show()
+                gaussian_core = gaus_2D(core_center_x, core_center_y, max_distance_from_core)
 
-                # TODO make the "Gaussian" balls have the same magniture,
+                gaussian_core_normalised = (gaussian_core - gaussian_core.min()) / (gaussian_core.max() - gaussian_core.min())
+
+                gaussian_core_normalised[gaussian_core_normalised < 0.01] = 0  # set to 1 to visualise the thresholding
+
+                # TODO make the "Gaussian" balls have the same magnitude,
                 # TODO threshold everything outside of e.g. 2 x radius to zero
 
-                labels += gaussian_core
+                labels += gaussian_core_normalised
 
             plt.imshow(labels)
             plt.show()
