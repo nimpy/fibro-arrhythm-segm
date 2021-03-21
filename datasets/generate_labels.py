@@ -10,6 +10,8 @@ from sklearn.preprocessing import normalize
 parser = argparse.ArgumentParser()
 parser.add_argument('--data_dir_arrhythm', default='/scratch/fibro_arrhythm_data/OriginalTextures/OriginalArrhythmogenic',
                     help="Directory containing the arrhythmogenic textures")
+parser.add_argument('--data_dir_nonarrhythm', default='/scratch/fibro_arrhythm_data/OriginalTextures/OriginalNonArrhythmogenic',
+                    help="Directory containing the non-arrhythmogenic textures")
 
 parser.add_argument('--goal_data_dir', default='/scratch/fibro_arrhythm_data/ds210320',
                     help="Directory where the dataset ready for training will be stored")
@@ -33,6 +35,8 @@ if __name__ == '__main__':
 
     # TODO convert both texture and label image array types to float32
 
+    # arrhythmogenic  # TODO put this into a function
+
     base_dir = args.data_dir_arrhythm
     texture_dirs = os.listdir(base_dir)
 
@@ -54,8 +58,8 @@ if __name__ == '__main__':
         print(os.path.join(args.goal_data_dir, 'textures', texture_filename))
 
         # saving
-        with open(os.path.join(args.goal_data_dir, 'textures', texture_filename), 'wb') as f:
-            np.save(f, texture)
+        # with open(os.path.join(args.goal_data_dir, 'textures', texture_filename), 'wb') as f:
+        #     np.save(f, texture)
 
 
         # cores
@@ -102,8 +106,42 @@ if __name__ == '__main__':
             print(np.min(label_image), np.max(label_image))
 
             # saving
-            with open(os.path.join(args.goal_data_dir, 'labels', label_filename), 'wb') as f:
-                np.save(f, label_image)
+            # with open(os.path.join(args.goal_data_dir, 'labels', label_filename), 'wb') as f:
+            #     np.save(f, label_image)
 
 
+    # non-arrhythmogenic
 
+    base_dir = args.data_dir_nonarrhythm
+    texture_dirs = os.listdir(base_dir)
+
+    for texture_dir in texture_dirs:
+
+        # texture
+        texture = np.load(os.path.join(base_dir, texture_dir, "texture.npy"))
+        texture = texture[1:-1, 1:-1]
+        texture = texture - 1
+        assert np.min(texture) - 0.0 < 0.00001, "The textures have some unexpected values"
+        assert np.max(texture) - 1.0 < 0.00001, "The textures have some unexpected values"
+
+        texture_ID = texture_dir[3:]
+        texture_ID = texture_ID.zfill(args.zfill_param)
+
+        print(texture_ID)
+
+        texture_filename = 'texture_' + texture_ID + '.npy'
+        print(os.path.join(args.goal_data_dir, 'textures', texture_filename))
+
+        label_image = np.zeros_like(texture)
+
+        label_filename = 'label_' + texture_ID + '.npy'
+        print(os.path.join(args.goal_data_dir, 'labels', label_filename))
+
+        print(np.min(texture), np.max(texture))
+        print(np.min(label_image), np.max(label_image))
+
+        # saving
+        # with open(os.path.join(args.goal_data_dir, 'textures', texture_filename), 'wb') as f:
+        #     np.save(f, texture)
+        # with open(os.path.join(args.goal_data_dir, 'labels', label_filename), 'wb') as f:
+        #     np.save(f, label_image)
